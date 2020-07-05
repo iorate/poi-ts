@@ -124,7 +124,7 @@ Poi.validate(value, Poi.null_());
 ```
 
 #### boolean()
-`boolean()` matches `boolean` values.
+`boolean()` matches a `boolean` value.
 
 ```typescript
 const value: unknown = true;
@@ -134,7 +134,7 @@ Poi.validate(value, Poi.boolean());
 ```
 
 #### number()
-`number()` matches `number` values.
+`number()` matches a `number` value.
 
 ```typescript
 const value: unknown = 42;
@@ -144,7 +144,7 @@ Poi.validate(value, Poi.number());
 ```
 
 #### string()
-`string()` matches `string` values.
+`string()` matches a `string` value.
 
 ```typescript
 const value: unknown = 'str';
@@ -153,8 +153,8 @@ Poi.validate(value, Poi.string());
 // The type of 'value' is 'string'.
 ```
 
-#### array(elements)
-`array(elements)` matches arrays of `elements`.
+#### array(element)
+`array(element)` matches an array of `element`.
 
 ```typescript
 const value: unknown = [23, 42];
@@ -164,7 +164,7 @@ Poi.validate(value, Poi.array(Poi.number()));
 ```
 
 #### object(shape)
-`object(shape)` matches objects of `shape`.
+`object(shape)` matches an object of `shape`.
 
 ```typescript
 const value: unknown = { foo: 42, bar: 'str' };
@@ -192,7 +192,7 @@ Poi.validate(value, Poi.object({ foo: Poi.number(), bar: Poi.string() }));
 ```
 
 #### literal(lit)
-`literal(lit)` matches values equal to `lit`. `lit` shall be a literal.
+`literal(lit)` matches a value equal to `lit`. `lit` shall be a literal.
 
 ```typescript
 const value: unknown = 42;
@@ -201,8 +201,8 @@ Poi.validate(value, Poi.literal(42));
 // The type of 'value' is '42'.
 ```
 
-#### tuple(elements)
-`tuple(elements)` matches tuples of `elements`.
+#### tuple(...elements)
+`tuple(...elements)` matches a tuple of `elements`.
 
 ```typescript
 const value: unknown = [42, 'str'];
@@ -213,8 +213,8 @@ Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()));
 
 NOTE: Optional elements and rest elements (e.g. `[boolean, number?, ...string[]]`) are not yet supported.
 
-#### union(alternatives)
-`union(alternatives)` matches one of `alternatives`.
+#### union(...alternatives)
+`union(...alternatives)` matches one of `alternatives`.
 
 ```typescript
 const value: unknown = 42;
