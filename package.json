@@ -1,0 +1,58 @@
+{
+  "name": "poi-ts",
+  "description": "A simple JSON type validator for TypeScript",
+  "version": "0.1.0",
+  "author": "iorate",
+  "bugs": {
+    "url": "https://github.com/iorate/poi-ts/issues"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.3",
+    "@typescript-eslint/eslint-plugin": "^3.5.0",
+    "@typescript-eslint/parser": "^3.5.0",
+    "commitizen": "^4.1.2",
+    "cz-conventional-changelog": "^3.2.0",
+    "eslint": "^7.4.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.1.0",
+    "prettier": "^2.0.5",
+    "semantic-release": "^17.1.1",
+    "ts-jest": "^26.1.1",
+    "typescript": "^3.9.6"
+  },
+  "files": [
+    "LICENSE.txt",
+    "README.md",
+    "index.js",
+    "index.d.ts",
+    "package.json"
+  ],
+  "homepage": "https://github.com/iorate/poi-ts#readme",
+  "keywords": [
+    "json",
+    "type",
+    "typescript",
+    "typing",
+    "validation",
+    "validator"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iorate/poi-ts.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "commit": "git-cz",
+    "lint": "eslint .",
+    "test": "jest"
+  },
+  "types": "index.d.ts"
+}
