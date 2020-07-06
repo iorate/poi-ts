@@ -10,7 +10,7 @@ test('null_() matches only null', () => {
   );
 });
 
-test('boolean() matches only boolean', () => {
+test('boolean() matches a boolean value', () => {
   let value: unknown = true;
   Poi.validate(value, Poi.boolean());
   const value2: boolean = value; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -20,7 +20,7 @@ test('boolean() matches only boolean', () => {
   );
 });
 
-test('number() matches only number', () => {
+test('number() matches a number value', () => {
   let value: unknown = 42;
   Poi.validate(value, Poi.number());
   const value2: number = value; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -30,7 +30,7 @@ test('number() matches only number', () => {
   );
 });
 
-test('string() matches only string', () => {
+test('string() matches a string value', () => {
   let value: unknown = 'str';
   Poi.validate(value, Poi.string());
   const value2: string = value; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -40,7 +40,7 @@ test('string() matches only string', () => {
   );
 });
 
-test('array(type) matches only array of type', () => {
+test('array(element) matches an array of element', () => {
   let value: unknown = [23, 42];
   Poi.validate(value, Poi.array(Poi.number()));
   const value2: number[] = value; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -59,7 +59,7 @@ test('array(type) matches only array of type', () => {
   const value3: number[] = value; // eslint-disable-line @typescript-eslint/no-unused-vars
 });
 
-test('object(map) matches only object of map', () => {
+test('object(shape) matches an object of shape', () => {
   let value: unknown = { foo: 42, bar: 'str' };
   Poi.validate(value, Poi.object({ foo: Poi.number(), bar: Poi.optional(Poi.string()) }));
   const value2: { foo: number; bar?: string } = value; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -91,7 +91,7 @@ test('object(map) matches only object of map', () => {
   );
 });
 
-test('literal(literal) matches only literal', () => {
+test('literal(lit) matches a value equal to lit', () => {
   let value: unknown = true;
   Poi.validate(value, Poi.literal(true));
   const value2: true = value; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -113,7 +113,7 @@ test('literal(literal) matches only literal', () => {
   const value4: 'str' = value; // eslint-disable-line @typescript-eslint/no-unused-vars
 });
 
-test('tuple(elements) matches only tuple of elements', () => {
+test('tuple(...elements) matches a tuple of elements', () => {
   let value: unknown = [42, 'str'];
   Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()));
   const value2: [number, string] = value; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -136,7 +136,7 @@ test('tuple(elements) matches only tuple of elements', () => {
   const value3: [] = value; // eslint-disable-line @typescript-eslint/no-unused-vars
 });
 
-test('union(alternatives) matches only one of alternatives', () => {
+test('union(...alternatives) matches one of alternatives', () => {
   let value: unknown = 'str';
   Poi.validate(value, Poi.union(Poi.number(), Poi.string()));
   const value2: number | string = value; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -177,7 +177,7 @@ test('Nested validator works well', () => {
   );
 });
 
-test('validate() validates a JSON value', () => {
+test('validate(value, validator, expression?) asserts value has the same type as validator', () => {
   let value: unknown = { foo: 42, bar: 'str' };
   Poi.validate(value, Poi.object({ foo: Poi.number(), bar: Poi.string() }));
   const value2: { foo: number; bar: string } = value; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -194,7 +194,7 @@ test('validate() validates a JSON value', () => {
   );
 });
 
-test('parseJSON() parses JSON and validates its value', () => {
+test('parseJSON(json, validator, expression?) is a shorthand for JSON.parse and validate', () => {
   const value = Poi.parseJSON(
     `{ "foo": 42, "bar": "str" }`,
     Poi.object({ foo: Poi.number(), bar: Poi.string() }),
