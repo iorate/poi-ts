@@ -4,7 +4,7 @@ export class ValidationError extends Error {
   constructor(
     readonly expression: string,
     readonly expectedType: string,
-    readonly subErrors: ValidationError[] = [],
+    readonly subErrors: readonly ValidationError[] = [],
   ) {
     super(
       [
@@ -22,18 +22,18 @@ export class ValidationError extends Error {
 }
 
 export interface ValidatorBase {
-  _typeKind?: string;
-  _typeName: string;
+  readonly _typeKind?: string;
+  readonly _typeName: string;
   _validate(value: unknown, expression: string): ValidationError | null;
 }
 
 export interface Validator<T, TK extends string = string> extends ValidatorBase {
-  _type?: T;
-  _typeKind?: TK;
+  readonly _type?: T;
+  readonly _typeKind?: TK;
   _validate(value: unknown, expression: string): ValidationError | null;
 }
 
-export type ValidatorType<V> = V extends { _type?: infer T } ? T : never;
+export type ValidatorType<V> = V extends { readonly _type?: infer T } ? T : never;
 
 export function null_(): Validator<null> {
   return {
@@ -119,7 +119,7 @@ export function optional<V extends ValidatorBase>(
   };
 }
 
-export function object<VM extends Record<string, ValidatorBase>>(
+export function object<VM extends Readonly<Record<string, ValidatorBase>>>(
   validatorMap: VM,
 ): Validator<
   {
@@ -195,7 +195,7 @@ export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 ext
 export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase, V9 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8, v9: V9): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>, ValidatorType<V4>, ValidatorType<V5>, ValidatorType<V6>, ValidatorType<V7>, ValidatorType<V8>, ValidatorType<V9>]>;
 // prettier-ignore
 export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase, V9 extends ValidatorBase, V10 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8, v9: V9, v10: V10): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>, ValidatorType<V4>, ValidatorType<V5>, ValidatorType<V6>, ValidatorType<V7>, ValidatorType<V8>, ValidatorType<V9>, ValidatorType<V10>]>;
-export function tuple(...validators: ValidatorBase[]): ValidatorBase {
+export function tuple(...validators: readonly ValidatorBase[]): ValidatorBase {
   return {
     _typeName: `[${validators.map(validator => validator._typeName).join(', ')}]`,
     _validate(value, expression) {
@@ -233,7 +233,7 @@ export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 ext
 export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase, V9 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8, v9: V9): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3> | ValidatorType<V4> | ValidatorType<V5> | ValidatorType<V6> | ValidatorType<V7> | ValidatorType<V8> | ValidatorType<V9>, 'union'>;
 // prettier-ignore
 export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase, V9 extends ValidatorBase, V10 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8, v9: V9, v10: V10): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3> | ValidatorType<V4> | ValidatorType<V5> | ValidatorType<V6> | ValidatorType<V7> | ValidatorType<V8> | ValidatorType<V9> | ValidatorType<V10>, 'union'>;
-export function union(...validators: ValidatorBase[]): ValidatorBase {
+export function union(...validators: readonly ValidatorBase[]): ValidatorBase {
   return {
     _typeKind: 'union',
     _typeName: validators.map(validator => validator._typeName).join(' | '),

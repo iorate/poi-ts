@@ -1,21 +1,21 @@
 export declare class ValidationError extends Error {
     readonly expression: string;
     readonly expectedType: string;
-    readonly subErrors: ValidationError[];
-    constructor(expression: string, expectedType: string, subErrors?: ValidationError[]);
+    readonly subErrors: readonly ValidationError[];
+    constructor(expression: string, expectedType: string, subErrors?: readonly ValidationError[]);
 }
 export interface ValidatorBase {
-    _typeKind?: string;
-    _typeName: string;
+    readonly _typeKind?: string;
+    readonly _typeName: string;
     _validate(value: unknown, expression: string): ValidationError | null;
 }
 export interface Validator<T, TK extends string = string> extends ValidatorBase {
-    _type?: T;
-    _typeKind?: TK;
+    readonly _type?: T;
+    readonly _typeKind?: TK;
     _validate(value: unknown, expression: string): ValidationError | null;
 }
 export declare type ValidatorType<V> = V extends {
-    _type?: infer T;
+    readonly _type?: infer T;
 } ? T : never;
 export declare function null_(): Validator<null>;
 export declare function boolean(): Validator<boolean>;
@@ -23,7 +23,7 @@ export declare function number(): Validator<number>;
 export declare function string(): Validator<string>;
 export declare function array<V extends ValidatorBase>(validator: V): Validator<ValidatorType<V>[]>;
 export declare function optional<V extends ValidatorBase>(validator: V): Validator<ValidatorType<V>, 'optional'>;
-export declare function object<VM extends Record<string, ValidatorBase>>(validatorMap: VM): Validator<{
+export declare function object<VM extends Readonly<Record<string, ValidatorBase>>>(validatorMap: VM): Validator<{
     [K in keyof VM]: VM[K]['_typeKind'] extends 'optional' | undefined ? {
         [K0 in K]?: ValidatorType<VM[K0]>;
     } : {
