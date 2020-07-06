@@ -22,6 +22,7 @@ try {
 - [Introduction](#introduction)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
+  - [Types](#types)
   - [Functions](#functions)
   - [Validators](#validators)
 
@@ -96,9 +97,44 @@ import * as Poi from 'poi-ts';
 ```
 
 ## Usage
+### Types
+#### ValidationError
+`ValidationError` is the type of errors thrown by `validate(value, validator, expression?)`.
+
+```typescript
+class ValidationError extends Error {
+  readonly expression: string,
+  readonly expectedType: string,
+  readonly subErrors: readonly ValidationError[];
+}
+```
+
+The `message` property may be useful for debug.
+
+```typescript
+const value: unknown = [23, 'str'];
+try {
+  Poi.validate(value, Poi.array(Poi.number()));
+} catch (error) {
+  console.error(error.message); // 'value' is not of type 'number[]'
+                                //   'value[1]' is not of type 'number'
+}
+```
+
+#### ValidatorType\<Validator\>
+`ValidatorType<Validator>` extracts the type that `Validator` expects.
+
+```typescript
+const personValidator = Poi.object({ age: Poi.number(), name: Poi.string() });
+
+type Person = Poi.ValidatorType<typeof personValidator>;
+// Equivalent to:
+// type Person = { age: number; name: string; };
+```
+
 ### Functions
 #### validate(value, validator, expression?)
-`validate(value, validator, expression?)` is [an assertion function](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions) that asserts `value` has the same type as `validator`.
+`validate(value, validator, expression?)` is [an assertion function](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions) that asserts `value` has the type that `validator` expects.
 
 It throws an error of type `ValidationError` if validation fails. The optional parameter `expression` (default: `'value'`) is used for error messages.
 
