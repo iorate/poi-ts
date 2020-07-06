@@ -4,13 +4,19 @@ Poi is a simple JSON type validator for TypeScript.
 ```typescript
 import * as Poi from 'poi-ts';
 
-const value = JSON.parse('{ "age": 17, "name": "Alice" }');
+const json = '{ "age": 17, "name": "Alice" }';
 
+const value = JSON.parse(json);
 // The type of 'value' is 'any' here...
 
-Poi.validate(value, Poi.object({ age: Poi.number(), name: Poi.string() }));
+try {
+  Poi.validate(value, Poi.object({ age: Poi.number(), name: Poi.string() }));
+  // The type of 'value' is '{ age: number; name: string; }' here!!!
 
-// The type of 'value' is '{ age: number; name: string; }' here!!!
+} catch (error) {
+  // Validation error
+
+}
 ```
 
 - [Introduction](#introduction)
@@ -20,46 +26,62 @@ Poi.validate(value, Poi.object({ age: Poi.number(), name: Poi.string() }));
   - [Validators](#validators)
 
 ## Introduction
-We often validate JSON values from network or filesystem.
+We often validate types of JSON values fetched from network or filesystem.
 For example, we can do it with [joi](https://github.com/hapijs/joi):
 
 ```javascript
 import Joi from '@hapi/joi';
 
+const json = '{ "age": 17, "name": "Alice" }';
+
 const { error, value } = Joi.object({
   age: Joi.number().required(),
   name: Joi.string().required(),
-}).validate(JSON.parse('{ "age": 17, "name": "Alice" }'));
+}).validate(JSON.parse(json));
+
 if (!error) {
-  // The type of 'value' is '{ age: number; name: string; }' here.
+  // The type of 'value' is 'any' here...
 
 } else {
-  console.error(error);
+  // Validation error
+
 }
 ```
 
-This is good for JavaScript, but NOT for TypeScript. Although `value` obviously has type `{ age: number; name: string; }` if `!error`, its type on TypeScript is still `any`.
+This is good for JavaScript, but not for TypeScript. Although `value` obviously has type `{ age: number; name: string; }` if `!error`, its type in TypeScript is still `any`.
+
+```typescript
+  // The type of 'value' is 'any' here...
+  
+  value.age = '37';         // type mismatch, but no compile error
+  console.log(value.namae); // typo, but no compile error
+```
 
 Poi derives the type of `value` automatically.
 
 ```typescript
 import * as Poi from 'poi-ts';
 
-const value = JSON.parse('{ "age": 17, "name": "Alice" }');
+const json = '{ "age": 17, "name": "Alice" }';
+
+const value = JSON.parse(json);
 
 try {
   Poi.validate(value, Poi.object({ age: Poi.number(), name: Poi.string() }));
   // The type of 'value' is '{ age: number; name: string; }' here!!!
 
-  value.age = '37'; // error TS2322: Type '"37"' is not assignable to type 'number'.
+  value.age = '37';         // error TS2322: Type '"37"' is not assignable to type 'number'.
+  console.log(value.namae); // error TS2551: Property 'namae' does not exist on type
+                            // '{ age: number; name: string; }'. Did you mean 'name'?
 
 } catch (error) {
-  console.error(error);
+  // Validation error
+
 }
 ```
 
 ## Getting Started
-Poi can be installed from npm. TypeScript >=3.7.0 is required.
+Poi can be installed from npm. `typescript >=3.7.2` is required to use Poi in TypeScript.
 
 ```shell
 npm install poi-ts
@@ -72,8 +94,6 @@ yarn add poi-ts
 ```typescript
 import * as Poi from 'poi-ts';
 ```
-
-You may need to set `"esInteropModules": true` in `tsconfig.json`.
 
 ## Usage
 ### Functions
@@ -88,23 +108,21 @@ const value: unknown = [23, 42];
 Poi.validate(value, Poi.array(Poi.number()));
 // The type of 'value' is 'number[]'.
 
-const tuple = [23, 'str'];
+const tuple: unknown = [23, 'str'];
 try {
-  Poi.validate(value, Poi.array(Poi.number()), 'tuple');
-} catch (e) {
-  // 'e.message' is:
-  //
-  // 'tuple' is not of type 'number[]'
-  //   'tuple[1]' is not of type 'number'
+  Poi.validate(tuple, Poi.array(Poi.number()), 'tuple');
+} catch (error) {
+  console.error(error.message); // 'tuple' is not of type 'number[]'
+                                //   'tuple[1]' is not of type 'number'
 }
 ```
 
 #### parseJSON(json, validator, expression?)
-`parseJSON(json, validator, expression?)` is a shorthand for `JSON.parse` and `validate`.
+`parseJSON(json, validator, expression?)` is a shorthand for `JSON.parse(json)` and `validate(value, validator, expression?)`.
 
 ```typescript
 const value = Poi.parseJSON(
-  `{ "foo": 42, "bar": "str" }`,
+  '{ "foo": 42, "bar": "str" }',
   Poi.object({ foo: Poi.number(), bar: Poi.string() }),
 );
 // The type of 'value' is '{ foo: number; bar: string; }'.
