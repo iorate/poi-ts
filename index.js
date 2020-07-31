@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseJSON = exports.validate = exports.union = exports.tuple = exports.literal = exports.object = exports.optional = exports.array = exports.string = exports.number = exports.boolean = exports.null_ = exports.ValidationError = void 0;
+exports.tryParseJSON = exports.parseJSON = exports.tryValidate = exports.validate = exports.union = exports.tuple = exports.literal = exports.object = exports.optional = exports.array = exports.string = exports.number = exports.boolean = exports.null_ = exports.ValidationError = void 0;
 const IDENTIFIER_REGEX = /^[$A-Za-z_]([$0-9A-Za-z_]*)$/;
 class ValidationError extends Error {
     constructor(expression, expectedType, subErrors = []) {
@@ -180,9 +180,23 @@ function validate(value, validator, expression = 'value') {
     }
 }
 exports.validate = validate;
+function tryValidate(value, validator) {
+    return validator._validate(value, 'value') == null;
+}
+exports.tryValidate = tryValidate;
 function parseJSON(json, validator, expression = 'value') {
     const value = JSON.parse(json);
     validate(value, validator, expression);
     return value;
 }
 exports.parseJSON = parseJSON;
+function tryParseJSON(json, validator) {
+    try {
+        const value = JSON.parse(json);
+        return tryValidate(value, validator) ? value : undefined;
+    }
+    catch (_a) {
+        return undefined;
+    }
+}
+exports.tryParseJSON = tryParseJSON;

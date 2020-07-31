@@ -262,8 +262,21 @@ export function validate<T>(
   }
 }
 
+export function tryValidate<T>(value: unknown, validator: Validator<T>): value is T {
+  return validator._validate(value, 'value') == null;
+}
+
 export function parseJSON<T>(json: string, validator: Validator<T>, expression = 'value'): T {
   const value = JSON.parse(json) as unknown;
   validate(value, validator, expression);
   return value;
+}
+
+export function tryParseJSON<T>(json: string, validator: Validator<T>): T | undefined {
+  try {
+    const value = JSON.parse(json) as unknown;
+    return tryValidate(value, validator) ? value : undefined;
+  } catch {
+    return undefined;
+  }
 }

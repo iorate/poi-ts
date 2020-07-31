@@ -153,8 +153,23 @@ try {
 }
 ```
 
+#### tryValidate(value, validator)
+`tryValidate(value, validator)` is [a user-defined type guard](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards) that returns whether `value` has the type that `validator` expects. It never throws.
+
+```typescript
+const value: unknown = [23, 'str'];
+
+if (Poi.tryValidate(value, Poi.array(Poi.number()))) {
+  // Never reached
+
+} else if (Poi.tryValidate(value, Poi.tuple(Poi.number(), Poi.string())) {
+  // The type of 'value' is '[number, string]'.
+
+}
+```
+
 #### parseJSON(json, validator, expression?)
-`parseJSON(json, validator, expression?)` is a shorthand for `JSON.parse(json)` and `validate(value, validator, expression?)`.
+`parseJSON(json, validator, expression?)` is a shorthand for `value = JSON.parse(json)` and `validate(value, validator, expression?)`.
 
 ```typescript
 const value = Poi.parseJSON(
@@ -162,6 +177,22 @@ const value = Poi.parseJSON(
   Poi.object({ foo: Poi.number(), bar: Poi.string() }),
 );
 // The type of 'value' is '{ foo: number; bar: string; }'.
+// The value of 'value' is '{ foo: 42, bar: "str" }'.
+```
+
+#### tryParseJSON(json, validator)
+`tryParseJSON(json, validator)` is a shorthand for `value = JSON.parse(json)` and `validate(value, validator)`. Unlike `parseJSON`, it returns `undefined` if parsing or validation fails. It never throws.
+
+```typescript
+const json = '{ "foo": 42, "bar": "str" }';
+
+const value1 = Poi.tryParseJSON(json, Poi.object({ foo: Poi.number(), bar: Poi.number() }));
+// The type of 'value1' is '{ foo: number; bar: number; } | undefined'.
+// The value of 'value1' is 'undefined'.
+
+const value2 = Poi.tryParseJSON(json, Poi.object({ foo: Poi.number(), bar: Poi.string() }));
+// The type of 'value2' is '{ foo: number; bar: string; } | undefined'.
+// The value of 'value2' is '{ foo: 42, bar: "str" }'.
 ```
 
 ### Validators

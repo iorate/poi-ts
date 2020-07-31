@@ -194,6 +194,17 @@ test('validate(value, validator, expression?) asserts value has the same type as
   );
 });
 
+test('tryValidate(value, validator) returns whether value has the same type as validator', () => {
+  const value: unknown = { foo: 42, bar: 'str' };
+  if (Poi.tryValidate(value, Poi.object({ foo: Poi.number(), bar: Poi.number() }))) {
+    throw new Error('Never reached');
+  } else if (Poi.tryValidate(value, Poi.object({ foo: Poi.number(), bar: Poi.string() }))) {
+    const value2: { foo: number; bar: string } = value; // eslint-disable-line @typescript-eslint/no-unused-vars
+  } else {
+    throw new Error('Never reached');
+  }
+});
+
 test('parseJSON(json, validator, expression?) is a shorthand for JSON.parse and validate', () => {
   const value = Poi.parseJSON(
     `{ "foo": 42, "bar": "str" }`,
@@ -211,4 +222,25 @@ test('parseJSON(json, validator, expression?) is a shorthand for JSON.parse and 
   expect(() =>
     Poi.parseJSON(`{ foo: 42, bar: 'str' }`, Poi.object({ foo: Poi.number(), bar: Poi.string() })),
   ).toThrow();
+});
+
+test('tryParseJSON(json, validator) is a shorthand for JSON.parse and validate', () => {
+  const value1 = Poi.tryParseJSON(
+    `{ "foo": 42, "bar": "str" }`,
+    Poi.object({ foo: Poi.number(), bar: Poi.string() }),
+  );
+  const value2: { foo: number; bar: string } | undefined = value1; // eslint-disable-line @typescript-eslint/no-unused-vars
+  expect(value1).toEqual({ foo: 42, bar: 'str' });
+
+  const json = `{ "foo": "42", "bar": "str" }`;
+  const value3 = Poi.tryParseJSON(json, Poi.object({ foo: Poi.number(), bar: Poi.string() }));
+  const value4: { foo: number; bar: string } | undefined = value3; // eslint-disable-line @typescript-eslint/no-unused-vars
+  expect(value3).toEqual(undefined);
+
+  const value5 = Poi.tryParseJSON(
+    `{ foo: 42, bar: 'str' }`,
+    Poi.object({ foo: Poi.number(), bar: Poi.string() }),
+  );
+  const value6: { foo: number; bar: string } | undefined = value5; // eslint-disable-line @typescript-eslint/no-unused-vars
+  expect(value5).toEqual(undefined);
 });
