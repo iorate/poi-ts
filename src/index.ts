@@ -251,6 +251,15 @@ export function union(...validators: readonly ValidatorBase[]): ValidatorBase {
   };
 }
 
+export function unknown(): Validator<unknown> {
+  return {
+    _typeName: 'unknown',
+    _validate() {
+      return null;
+    },
+  };
+}
+
 export function validate<T>(
   value: unknown,
   validator: Validator<T>,

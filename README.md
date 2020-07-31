@@ -196,7 +196,7 @@ const value2 = Poi.tryParseJSON(json, Poi.object({ foo: Poi.number(), bar: Poi.s
 ```
 
 ### Validators
-Poi has 9 basic validators.
+Poi has ten basic validators.
 
 #### null_()
 `null_()` matches only `null`.
@@ -306,6 +306,16 @@ const value: unknown = 42;
 
 Poi.validate(value, Poi.union(Poi.boolean(), Poi.number(), Poi.string()));
 // The type of 'value' is 'boolean | number | string'.
+```
+
+#### unknown()
+`unknown()` matches any.
+
+```typescript
+const value: unknown = { foo: 42, bar: 'str' };
+
+Poi.validate(value, Poi.object({ foo: Poi.unknown(), bar: Poi.unknown() }));
+// The type of 'value' is '{ foo: unknown; bar: unknown; }'.
 ```
 
 ## Author

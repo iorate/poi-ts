@@ -148,6 +148,12 @@ test('union(...alternatives) matches one of alternatives', () => {
   );
 });
 
+test('unknown() matches any', () => {
+  const value: unknown = { foo: 42, bar: 'str' };
+  Poi.validate(value, Poi.object({ foo: Poi.unknown(), bar: Poi.unknown() }));
+  const value2: { foo: unknown; bar: unknown } = value; // eslint-disable-line @typescript-eslint/no-unused-vars
+});
+
 test('Nested validator works well', () => {
   let value: unknown = { code: 42, details: { type: 'b', values: ['foo', 'bar'] } };
   const validator = Poi.object({

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.tryParseJSON = exports.parseJSON = exports.tryValidate = exports.validate = exports.union = exports.tuple = exports.literal = exports.object = exports.optional = exports.array = exports.string = exports.number = exports.boolean = exports.null_ = exports.ValidationError = void 0;
+exports.tryParseJSON = exports.parseJSON = exports.tryValidate = exports.validate = exports.unknown = exports.union = exports.tuple = exports.literal = exports.object = exports.optional = exports.array = exports.string = exports.number = exports.boolean = exports.null_ = exports.ValidationError = void 0;
 const IDENTIFIER_REGEX = /^[$A-Za-z_]([$0-9A-Za-z_]*)$/;
 class ValidationError extends Error {
     constructor(expression, expectedType, subErrors = []) {
@@ -173,6 +173,15 @@ function union(...validators) {
     };
 }
 exports.union = union;
+function unknown() {
+    return {
+        _typeName: 'unknown',
+        _validate() {
+            return null;
+        },
+    };
+}
+exports.unknown = unknown;
 function validate(value, validator, expression = 'value') {
     const error = validator._validate(value, expression);
     if (error) {
