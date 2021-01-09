@@ -24,69 +24,67 @@ export class ValidationError extends Error {
 export interface ValidatorBase {
   readonly _typeKind?: string;
   readonly _typeName: string;
-  _validate(value: unknown, expression: string): ValidationError | null;
+  _validate(value: unknown, expression: string): void | ValidationError;
 }
 
 export interface Validator<T, TK extends string = string> extends ValidatorBase {
   readonly _type?: T;
   readonly _typeKind?: TK;
-  _validate(value: unknown, expression: string): ValidationError | null;
+  _validate(value: unknown, expression: string): void | ValidationError;
 }
 
 export type ValidatorType<V> = V extends { readonly _type?: infer T } ? T : never;
 
-export function null_(): Validator<null> {
+export const null_: () => Validator<null> = () => {
   return {
     _typeName: 'null',
     _validate(value, expression) {
       if (value !== null) {
         return new ValidationError(expression, this._typeName);
       }
-      return null;
     },
   };
-}
+};
 
-export function boolean(): Validator<boolean> {
+export const boolean: () => Validator<boolean> = () => {
   return {
     _typeName: 'boolean',
     _validate(value, expression) {
       if (typeof value !== 'boolean') {
         return new ValidationError(expression, this._typeName);
       }
-      return null;
     },
   };
-}
+};
 
-export function number(): Validator<number> {
+export const number: () => Validator<number> = () => {
   return {
     _typeName: 'number',
     _validate(value, expression) {
       if (typeof value !== 'number') {
         return new ValidationError(expression, this._typeName);
       }
-      return null;
     },
   };
-}
+};
 
-export function string(): Validator<string> {
+export const string: () => Validator<string> = () => {
   return {
     _typeName: 'string',
     _validate(value, expression) {
       if (typeof value !== 'string') {
         return new ValidationError(expression, this._typeName);
       }
-      return null;
     },
   };
-}
+};
 
-export function array<V extends ValidatorBase>(validator: V): Validator<ValidatorType<V>[]> {
+export const array: <V extends ValidatorBase>(
+  validator: V,
+) => Validator<ValidatorType<V>[]> = validator => {
   return {
     _typeName:
-      validator._typeKind === 'union' ? `(${validator._typeName})[]` : `${validator._typeName}[]`,
+      validator._typeKind === 'u' ? `(${validator._typeName})[]` : `${validator._typeName}[]`,
     _validate(value, expression) {
       if (!Array.isArray(value)) {
         return new ValidationError(expression, this._typeName);
@@ -99,31 +97,30 @@ export function array<V extends ValidatorBase>(validator: V): Validator<Validato
         }
         ++index;
       }
-      return null;
     },
   };
-}
+};
 
-export function optional<V extends ValidatorBase>(
+export const optional: <V extends ValidatorBase>(
   validator: V,
-): Validator<ValidatorType<V>, 'optional'> {
+) => Validator<ValidatorType<V>, 'o'> = validator => {
   return {
-    _typeKind: 'optional',
+    _typeKind: 'o',
     _typeName: validator._typeName,
     _validate(value, expression) {
       if (value === undefined) {
-        return null;
+        return;
       }
       return validator._validate(value, expression);
     },
   };
-}
+};
 
-export function object<VM extends Readonly<Record<string, ValidatorBase>>>(
+export const object: <VM extends Readonly<Record<string, ValidatorBase>>>(
   validatorMap: VM,
-): Validator<
+) => Validator<
   {
-    [K in keyof VM]: VM[K]['_typeKind'] extends 'optional' | undefined
+    [K in keyof VM]: VM[K]['_typeKind'] extends 'o' | undefined
       ? { [K0 in K]?: ValidatorType<VM[K0]> }
       : { [K0 in K]: ValidatorType<VM[K0]> };
   }[keyof VM] extends infer U
@@ -131,14 +128,14 @@ export function object<VM extends Readonly<Record<string, ValidatorBase>>>(
       ? { [K in keyof I]: I[K] }
       : never
     : never
-> {
+> = validatorMap => {
   return {
     _typeName: Object.keys(validatorMap).length
       ? `{ ${Object.keys(validatorMap)
           .map(
             key =>
               `${IDENTIFIER_REGEX.test(key) ? key : JSON.stringify(key)}${
-                validatorMap[key]._typeKind === 'optional' ? '?' : ''
+                validatorMap[key]._typeKind === 'o' ? '?' : ''
               }: ${validatorMap[key]._typeName};`,
           )
           .join(' ')} }`
@@ -158,44 +155,26 @@ export function object<VM extends Readonly<Record<string, ValidatorBase>>>(
           return new ValidationError(expression, this._typeName, [subError]);
         }
       }
-      return null;
     },
   };
-}
+};
 
-export function literal<L extends boolean | number | string>(l: L): Validator<L> {
+export const literal: <L extends boolean | number | string>(l: L) => Validator<L> = l => {
   return {
     _typeName: JSON.stringify(l),
     _validate(value, expression) {
       if (value !== l) {
         return new ValidationError(expression, this._typeName);
       }
-      return null;
     },
   };
-}
+};
 
-export function tuple(): Validator<[]>;
-export function tuple<V1 extends ValidatorBase>(v1: V1): Validator<[ValidatorType<V1>]>;
-// prettier-ignore
-export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase>(v1: V1, v2: V2): Validator<[ValidatorType<V1>, ValidatorType<V2>]>;
-// prettier-ignore
-export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase>(v1: V1, v2: V2, v3: V3): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>]>;
-// prettier-ignore
-export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>, ValidatorType<V4>]>;
-// prettier-ignore
-export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>, ValidatorType<V4>, ValidatorType<V5>]>;
-// prettier-ignore
-export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>, ValidatorType<V4>, ValidatorType<V5>, ValidatorType<V6>]>;
-// prettier-ignore
-export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>, ValidatorType<V4>, ValidatorType<V5>, ValidatorType<V6>, ValidatorType<V7>]>;
-// prettier-ignore
-export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>, ValidatorType<V4>, ValidatorType<V5>, ValidatorType<V6>, ValidatorType<V7>, ValidatorType<V8>]>;
-// prettier-ignore
-export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase, V9 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8, v9: V9): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>, ValidatorType<V4>, ValidatorType<V5>, ValidatorType<V6>, ValidatorType<V7>, ValidatorType<V8>, ValidatorType<V9>]>;
-// prettier-ignore
-export function tuple<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase, V9 extends ValidatorBase, V10 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8, v9: V9, v10: V10): Validator<[ValidatorType<V1>, ValidatorType<V2>, ValidatorType<V3>, ValidatorType<V4>, ValidatorType<V5>, ValidatorType<V6>, ValidatorType<V7>, ValidatorType<V8>, ValidatorType<V9>, ValidatorType<V10>]>;
-export function tuple(...validators: readonly ValidatorBase[]): ValidatorBase {
+export const tuple: <Validators extends readonly ValidatorBase[]>(
+  ...validators: readonly [...Validators]
+) => Validator<{ [I in keyof Validators]: ValidatorType<Validators[I]> }> = (
+  ...validators: readonly ValidatorBase[]
+) => {
   return {
     _typeName: `[${validators.map(validator => validator._typeName).join(', ')}]`,
     _validate(value, expression) {
@@ -210,55 +189,39 @@ export function tuple(...validators: readonly ValidatorBase[]): ValidatorBase {
         }
         ++index;
       }
-      return null;
     },
   };
-}
+};
 
-// prettier-ignore
-export function union<V1 extends ValidatorBase, V2 extends ValidatorBase>(v1: V1, v2: V2): Validator<ValidatorType<V1> | ValidatorType<V2>, 'union'>;
-// prettier-ignore
-export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase>(v1: V1, v2: V2, v3: V3): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3>, 'union'>;
-// prettier-ignore
-export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3> | ValidatorType<V4>, 'union'>;
-// prettier-ignore
-export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3> | ValidatorType<V4> | ValidatorType<V5>, 'union'>;
-// prettier-ignore
-export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3> | ValidatorType<V4> | ValidatorType<V5> | ValidatorType<V6>, 'union'>;
-// prettier-ignore
-export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3> | ValidatorType<V4> | ValidatorType<V5> | ValidatorType<V6> | ValidatorType<V7>, 'union'>;
-// prettier-ignore
-export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3> | ValidatorType<V4> | ValidatorType<V5> | ValidatorType<V6> | ValidatorType<V7> | ValidatorType<V8>, 'union'>;
-// prettier-ignore
-export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase, V9 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8, v9: V9): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3> | ValidatorType<V4> | ValidatorType<V5> | ValidatorType<V6> | ValidatorType<V7> | ValidatorType<V8> | ValidatorType<V9>, 'union'>;
-// prettier-ignore
-export function union<V1 extends ValidatorBase, V2 extends ValidatorBase, V3 extends ValidatorBase, V4 extends ValidatorBase, V5 extends ValidatorBase, V6 extends ValidatorBase, V7 extends ValidatorBase, V8 extends ValidatorBase, V9 extends ValidatorBase, V10 extends ValidatorBase>(v1: V1, v2: V2, v3: V3, v4: V4, v5: V5, v6: V6, v7: V7, v8: V8, v9: V9, v10: V10): Validator<ValidatorType<V1> | ValidatorType<V2> | ValidatorType<V3> | ValidatorType<V4> | ValidatorType<V5> | ValidatorType<V6> | ValidatorType<V7> | ValidatorType<V8> | ValidatorType<V9> | ValidatorType<V10>, 'union'>;
-export function union(...validators: readonly ValidatorBase[]): ValidatorBase {
+export const union: <Validators extends readonly ValidatorBase[]>(
+  ...validators: readonly [...Validators]
+) => Validator<
+  Validators[number] extends infer Validator ? ValidatorType<Validator> : never,
+  'u'
+> = (...validators: readonly ValidatorBase[]) => {
   return {
-    _typeKind: 'union',
+    _typeKind: 'u',
     _typeName: validators.map(validator => validator._typeName).join(' | '),
     _validate(value, expression) {
       const subErrors: ValidationError[] = [];
       for (const validator of validators) {
         const subError = validator._validate(value, expression);
         if (!subError) {
-          return null;
+          return;
         }
         subErrors.push(subError);
       }
       return new ValidationError(expression, this._typeName, subErrors);
     },
   };
-}
+};
 
-export function unknown(): Validator<unknown> {
+export const unknown: () => Validator<unknown> = () => {
   return {
     _typeName: 'unknown',
-    _validate() {
-      return null;
-    },
+    _validate() {}, // eslint-disable-line @typescript-eslint/no-empty-function
   };
-}
+};
 
 export function validate<T>(
   value: unknown,
@@ -272,20 +235,27 @@ export function validate<T>(
 }
 
 export function tryValidate<T>(value: unknown, validator: Validator<T>): value is T {
-  return validator._validate(value, 'value') == null;
+  return !validator._validate(value, '');
 }
 
-export function parseJSON<T>(json: string, validator: Validator<T>, expression = 'value'): T {
+export const parseJSON: <T>(json: string, validator: Validator<T>, expression?: string) => T = (
+  json,
+  validator,
+  expression = 'value',
+) => {
   const value = JSON.parse(json) as unknown;
   validate(value, validator, expression);
   return value;
-}
+};
 
-export function tryParseJSON<T>(json: string, validator: Validator<T>): T | undefined {
+export const tryParseJSON: <T>(json: string, validator: Validator<T>) => T | undefined = (
+  json,
+  validator,
+) => {
   try {
     const value = JSON.parse(json) as unknown;
-    return tryValidate(value, validator) ? value : undefined;
-  } catch {
-    return undefined;
-  }
-}
+    if (tryValidate(value, validator)) {
+      return value;
+    }
+  } catch {} // eslint-disable-line no-empty
+};

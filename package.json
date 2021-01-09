@@ -13,19 +13,19 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.8",
-    "@typescript-eslint/eslint-plugin": "^3.7.1",
-    "@typescript-eslint/parser": "^3.7.1",
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
     "commitizen": "^4.1.2",
     "cz-conventional-changelog": "^3.2.0",
     "eslint": "^7.5.0",
-    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-prettier": "^7.1.0",
     "jest": "^26.2.2",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "semantic-release": "^17.1.1",
     "terser": "^5.5.1",
     "ts-jest": "^26.1.4",
-    "typescript": "^3.9.7"
+    "typescript": "^4.1.3"
   },
   "eslintConfig": {
     "extends": [
@@ -75,9 +75,11 @@
   "scripts": {
     "build": "run-s build:*",
     "build:tsc": "tsc",
-    "build:terser": "terser ---compress --mangle --mangle-props regex=^_ --output dist/index.min.js --toplevel dist/index.js",
+    "build:terser": "terser ---compress --mangle --mangle-props \"regex=/^_/\" --output dist/index.min.js --ecma 2015 --toplevel dist/index.js",
     "commit": "git-cz",
-    "lint": "eslint src",
+    "lint": "run-p lint:*",
+    "lint:eslint": "eslint src",
+    "lint:prettier": "prettier --check --loglevel warn .",
     "test": "jest"
   },
   "types": "dist/index.d.ts"
