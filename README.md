@@ -52,7 +52,7 @@ This is good for JavaScript, but not for TypeScript. Although `value` obviously 
 ```typescript
 // The type of 'value' is 'any' here...
 
-value.age = '37'; // type mismatch, but no compile error
+value.age = '37';         // type mismatch, but no compile error
 console.log(value.namae); // typo, but no compile error
 ```
 
@@ -69,9 +69,9 @@ try {
   Poi.validate(value, Poi.object({ age: Poi.number(), name: Poi.string() }));
   // The type of 'value' is '{ age: number; name: string; }' here!!!
 
-  value.age = '37'; // error TS2322: Type '"37"' is not assignable to type 'number'.
+  value.age = '37';         // error TS2322: Type '"37"' is not assignable to type 'number'.
   console.log(value.namae); // error TS2551: Property 'namae' does not exist on type
-  // '{ age: number; name: string; }'. Did you mean 'name'?
+                            // '{ age: number; name: string; }'. Did you mean 'name'?
 } catch (error) {
   // Validation error
 }
@@ -117,7 +117,7 @@ try {
   Poi.validate(value, Poi.array(Poi.number()));
 } catch (error) {
   console.error(error.message); // 'value' is not of type 'number[]'
-  //   'value[1]' is not of type 'number'
+                                //   'value[1]' is not of type 'number'
 }
 ```
 
@@ -152,7 +152,7 @@ try {
   Poi.validate(tuple, Poi.array(Poi.number()), 'tuple');
 } catch (error) {
   console.error(error.message); // 'tuple' is not of type 'number[]'
-  //   'tuple[1]' is not of type 'number'
+                                //   'tuple[1]' is not of type 'number'
 }
 ```
 
@@ -165,10 +165,8 @@ const value: unknown = [23, 'str'];
 
 if (Poi.tryValidate(value, Poi.array(Poi.number()))) {
   // Never reached
-
 } else if (Poi.tryValidate(value, Poi.tuple(Poi.number(), Poi.string())) {
   // The type of 'value' is '[number, string]'.
-
 }
 ```
 

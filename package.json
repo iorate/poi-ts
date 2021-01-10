@@ -64,6 +64,7 @@
   "main": "dist/index.min.js",
   "prettier": {
     "arrowParens": "avoid",
+    "embeddedLanguageFormatting": "off",
     "printWidth": 100,
     "singleQuote": true,
     "trailingComma": "all"
