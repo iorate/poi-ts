@@ -13,7 +13,7 @@ const value = JSON.parse(json);
 try {
   Poi.validate(value, Poi.object({ age: Poi.number(), name: Poi.string() }));
   // The type of 'value' is '{ age: number; name: string; }' here!!!
-} catch (error) {
+} catch (error: unknown) {
   // Validation error
 }
 ```
@@ -72,7 +72,7 @@ try {
   value.age = '37';         // error TS2322: Type '"37"' is not assignable to type 'number'.
   console.log(value.namae); // error TS2551: Property 'namae' does not exist on type
                             // '{ age: number; name: string; }'. Did you mean 'name'?
-} catch (error) {
+} catch (error: unknown) {
   // Validation error
 }
 ```
@@ -115,9 +115,11 @@ The `message` property may be useful for debug.
 const value: unknown = [23, 'str'];
 try {
   Poi.validate(value, Poi.array(Poi.number()));
-} catch (error) {
-  console.error(error.message); // 'value' is not of type 'number[]'
-                                //   'value[1]' is not of type 'number'
+} catch (error: unknown) {
+  if (error instanceof Error) {
+    console.error(error.message); // 'value' is not of type 'number[]'
+                                  //   'value[1]' is not of type 'number'
+  }
 }
 ```
 
@@ -150,9 +152,11 @@ Poi.validate(value, Poi.array(Poi.number()));
 const tuple: unknown = [23, 'str'];
 try {
   Poi.validate(tuple, Poi.array(Poi.number()), 'tuple');
-} catch (error) {
-  console.error(error.message); // 'tuple' is not of type 'number[]'
-                                //   'tuple[1]' is not of type 'number'
+} catch (error: unknown) {
+  if (error instanceof Error) {
+    console.error(error.message); // 'tuple' is not of type 'number[]'
+                                  //   'tuple[1]' is not of type 'number'
+  }
 }
 ```
 
