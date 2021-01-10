@@ -59,6 +59,29 @@ test('array(element) matches an array of element', () => {
   const value3: number[] = value; // eslint-disable-line @typescript-eslint/no-unused-vars
 });
 
+test('tuple(...elements) matches a tuple of elements', () => {
+  let value: unknown = [42, 'str'];
+  Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()));
+  const value2: [number, string] = value; // eslint-disable-line @typescript-eslint/no-unused-vars
+  value = [42, null];
+  expect(() => Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()))).toThrow(
+    new Error(`'value' is not of type '[number, string]'
+  'value[1]' is not of type 'string'`),
+  );
+  value = [42, null, true];
+  expect(() => Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()))).toThrow(
+    new Error(`'value' is not of type '[number, string]'`),
+  );
+  value = 42;
+  expect(() => Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()))).toThrow(
+    new Error(`'value' is not of type '[number, string]'`),
+  );
+
+  value = [];
+  Poi.validate(value, Poi.tuple());
+  const value3: [] = value; // eslint-disable-line @typescript-eslint/no-unused-vars
+});
+
 test('object(shape) matches an object of shape', () => {
   let value: unknown = { foo: 42, bar: 'str' };
   Poi.validate(value, Poi.object({ foo: Poi.number(), bar: Poi.optional(Poi.string()) }));
@@ -91,6 +114,20 @@ test('object(shape) matches an object of shape', () => {
   );
 });
 
+test('record(value) matches a record which value type is value', () => {
+  let value: unknown = { foo: '42', bar: 'str' };
+  Poi.validate(value, Poi.record(Poi.string()));
+  const value2: Record<string, string> = value; // eslint-disable-line @typescript-eslint/no-unused-vars
+  value = { foo: 42, bar: 'str' };
+  expect(() => Poi.validate(value, Poi.record(Poi.string()))).toThrow(
+    new Error(`'value' is not of type '{ [key: string]: string; }'
+  'value["foo"]' is not of type 'string'`),
+  );
+
+  value = {};
+  Poi.validate(value, Poi.record(Poi.number()));
+});
+
 test('literal(lit) matches a value equal to lit', () => {
   let value: unknown = true;
   Poi.validate(value, Poi.literal(true));
@@ -111,29 +148,6 @@ test('literal(lit) matches a value equal to lit', () => {
   value = 'str';
   Poi.validate(value, Poi.literal('str'));
   const value4: 'str' = value; // eslint-disable-line @typescript-eslint/no-unused-vars
-});
-
-test('tuple(...elements) matches a tuple of elements', () => {
-  let value: unknown = [42, 'str'];
-  Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()));
-  const value2: [number, string] = value; // eslint-disable-line @typescript-eslint/no-unused-vars
-  value = [42, null];
-  expect(() => Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()))).toThrow(
-    new Error(`'value' is not of type '[number, string]'
-  'value[1]' is not of type 'string'`),
-  );
-  value = [42, null, true];
-  expect(() => Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()))).toThrow(
-    new Error(`'value' is not of type '[number, string]'`),
-  );
-  value = 42;
-  expect(() => Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()))).toThrow(
-    new Error(`'value' is not of type '[number, string]'`),
-  );
-
-  value = [];
-  Poi.validate(value, Poi.tuple());
-  const value3: [] = value; // eslint-disable-line @typescript-eslint/no-unused-vars
 });
 
 test('union(...alternatives) matches one of alternatives', () => {

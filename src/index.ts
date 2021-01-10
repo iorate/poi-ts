@@ -101,20 +101,32 @@ export const array: <V extends ValidatorBase>(
   };
 };
 
-export const optional: <V extends ValidatorBase>(
-  validator: V,
-) => Validator<ValidatorType<V>, 'o'> = validator => {
+export const tuple: <Validators extends readonly ValidatorBase[]>(
+  ...validators: readonly [...Validators]
+) => Validator<{ [I in keyof Validators]: ValidatorType<Validators[I]> }> = (
+  ...validators: readonly ValidatorBase[]
+) => {
   return {
-    _typeKind: 'o',
-    _typeName: validator._typeName,
+    _typeName: `[${validators.map(validator => validator._typeName).join(', ')}]`,
     _validate(value, expression) {
-      if (value === undefined) {
-        return;
+      if (!Array.isArray(value) || value.length !== validators.length) {
+        return new ValidationError(expression, this._typeName);
       }
-      return validator._validate(value, expression);
+      let index = 0;
+      for (const validator of validators) {
+        const subError = validator._validate(value[index], `${expression}[${index}]`);
+        if (subError) {
+          return new ValidationError(expression, this._typeName, [subError]);
+        }
+        ++index;
+      }
     },
   };
 };
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && !Array.isArray(value) && typeof value === 'object';
+}
 
 export const object: <VM extends Readonly<Record<string, ValidatorBase>>>(
   validatorMap: VM,
@@ -141,16 +153,50 @@ export const object: <VM extends Readonly<Record<string, ValidatorBase>>>(
           .join(' ')} }`
       : '{}',
     _validate(value, expression) {
-      if (value === null || Array.isArray(value) || typeof value !== 'object') {
+      if (!isObject(value)) {
         return new ValidationError(expression, this._typeName);
       }
       for (const key of Object.keys(validatorMap)) {
         const subError = validatorMap[key]._validate(
-          (value as Record<string, unknown>)[key],
+          value[key],
           IDENTIFIER_REGEX.test(key)
             ? `${expression}.${key}`
             : `${expression}[${JSON.stringify(key)}]`,
         );
+        if (subError) {
+          return new ValidationError(expression, this._typeName, [subError]);
+        }
+      }
+    },
+  };
+};
+
+export const optional: <V extends ValidatorBase>(
+  validator: V,
+) => Validator<ValidatorType<V>, 'o'> = validator => {
+  return {
+    _typeKind: 'o',
+    _typeName: validator._typeName,
+    _validate(value, expression) {
+      if (value === undefined) {
+        return;
+      }
+      return validator._validate(value, expression);
+    },
+  };
+};
+
+export const record: <V extends ValidatorBase>(
+  validator: V,
+) => Validator<Record<string, ValidatorType<V>>> = validator => {
+  return {
+    _typeName: `{ [key: string]: ${validator._typeName}; }`,
+    _validate(value, expression) {
+      if (!isObject(value)) {
+        return new ValidationError(expression, this._typeName);
+      }
+      for (const key of Object.keys(value)) {
+        const subError = validator._validate(value[key], `${expression}[${JSON.stringify(key)}]`);
         if (subError) {
           return new ValidationError(expression, this._typeName, [subError]);
         }
@@ -165,29 +211,6 @@ export const literal: <L extends boolean | number | string>(l: L) => Validator<L
     _validate(value, expression) {
       if (value !== l) {
         return new ValidationError(expression, this._typeName);
-      }
-    },
-  };
-};
-
-export const tuple: <Validators extends readonly ValidatorBase[]>(
-  ...validators: readonly [...Validators]
-) => Validator<{ [I in keyof Validators]: ValidatorType<Validators[I]> }> = (
-  ...validators: readonly ValidatorBase[]
-) => {
-  return {
-    _typeName: `[${validators.map(validator => validator._typeName).join(', ')}]`,
-    _validate(value, expression) {
-      if (!Array.isArray(value) || value.length !== validators.length) {
-        return new ValidationError(expression, this._typeName);
-      }
-      let index = 0;
-      for (const validator of validators) {
-        const subError = validator._validate(value[index], `${expression}[${index}]`);
-        if (subError) {
-          return new ValidationError(expression, this._typeName, [subError]);
-        }
-        ++index;
       }
     },
   };

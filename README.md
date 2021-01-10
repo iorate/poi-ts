@@ -203,7 +203,7 @@ const value2 = Poi.tryParseJSON(json, Poi.object({ foo: Poi.number(), bar: Poi.s
 
 ### Validators
 
-Poi has ten basic validators.
+Poi has some basic validators.
 
 #### null\_()
 
@@ -260,6 +260,19 @@ Poi.validate(value, Poi.array(Poi.number()));
 // The type of 'value' is 'number[]'.
 ```
 
+#### tuple(...elements)
+
+`tuple(...elements)` matches a tuple of `elements`.
+
+```typescript
+const value: unknown = [42, 'str'];
+
+Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()));
+// The type of 'value' is '[number, string]'.
+```
+
+NOTE: Optional elements and rest elements (e.g. `[boolean, number?, ...string[]]`) are not yet supported.
+
 #### object(shape)
 
 `object(shape)` matches an object of `shape`.
@@ -289,6 +302,17 @@ Poi.validate(value, Poi.object({ foo: Poi.number(), bar: Poi.string() }));
 // The type of 'value' is '{ foo: number; bar: string; }'.
 ```
 
+### record(value)
+
+`record(value)` matches a record which value type is `value`.
+
+```typescript
+const value: unknown = { foo: 23, bar: 42 };
+
+Poi.validate(value, Poi.record(Poi.number()));
+// The type of 'value' is 'Record<string, number>'.
+```
+
 #### literal(lit)
 
 `literal(lit)` matches a value equal to `lit`. `lit` shall be a literal.
@@ -299,19 +323,6 @@ const value: unknown = 42;
 Poi.validate(value, Poi.literal(42));
 // The type of 'value' is '42'.
 ```
-
-#### tuple(...elements)
-
-`tuple(...elements)` matches a tuple of `elements`.
-
-```typescript
-const value: unknown = [42, 'str'];
-
-Poi.validate(value, Poi.tuple(Poi.number(), Poi.string()));
-// The type of 'value' is '[number, string]'.
-```
-
-NOTE: Optional elements and rest elements (e.g. `[boolean, number?, ...string[]]`) are not yet supported.
 
 #### union(...alternatives)
 
