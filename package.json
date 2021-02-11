@@ -13,19 +13,19 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.8",
-    "@typescript-eslint/eslint-plugin": "^4.12.0",
-    "@typescript-eslint/parser": "^4.12.0",
-    "commitizen": "^4.1.2",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
+    "commitizen": "^4.2.3",
     "cz-conventional-changelog": "^3.2.0",
-    "eslint": "^7.5.0",
-    "eslint-config-prettier": "^7.1.0",
+    "eslint": "^7.19.0",
+    "eslint-config-prettier": "^7.2.0",
     "jest": "^26.2.2",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
-    "semantic-release": "^17.1.1",
-    "terser": "^5.5.1",
-    "ts-jest": "^26.1.4",
-    "typescript": "^4.1.3"
+    "semantic-release": "^17.3.8",
+    "terser": "^5.6.0-beta",
+    "ts-jest": "^26.5.1",
+    "typescript": "^4.1.5"
   },
   "eslintConfig": {
     "extends": [
