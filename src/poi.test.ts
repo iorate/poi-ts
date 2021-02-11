@@ -1,4 +1,4 @@
-import * as Poi from '.';
+import * as Poi from '..';
 
 test('null_() matches only null', () => {
   let value: unknown = null;

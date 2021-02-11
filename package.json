@@ -1,7 +1,30 @@
 {
   "name": "poi-ts",
-  "description": "A simple JSON type validator for TypeScript",
   "version": "0.1.0",
+  "description": "A simple JSON type validator for TypeScript",
+  "source": "src/poi.ts",
+  "main": "dist/poi.js",
+  "module": "dist/poi.esm.js",
+  "umd:main": "dist/poi.umd.js",
+  "types": "poi.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/poi.js",
+      "import": "./dist/poi.esm.js",
+      "umd": "./dist/poi.umd.js",
+      "browser": "./dist/poi.modern.js"
+    }
+  },
+  "files": [
+    "LICENSE.txt",
+    "README.md",
+    "dist/poi.esm.js",
+    "dist/poi.js",
+    "dist/poi.modern.js",
+    "dist/poi.umd.js",
+    "package.json",
+    "poi.d.ts"
+  ],
   "author": "iorate",
   "bugs": {
     "url": "https://github.com/iorate/poi-ts/issues"
@@ -20,10 +43,10 @@
     "eslint": "^7.19.0",
     "eslint-config-prettier": "^7.2.0",
     "jest": "^26.2.2",
+    "microbundle": "^0.13.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "semantic-release": "^17.3.8",
-    "terser": "^5.6.0-beta",
     "ts-jest": "^26.5.1",
     "typescript": "^4.1.5"
   },
@@ -35,33 +58,38 @@
       "prettier",
       "prettier/@typescript-eslint"
     ],
+    "ignorePatterns": [
+      "/dist"
+    ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-      "project": "./tsconfig.eslint.json"
+      "project": "./tsconfig.json"
     }
   },
-  "files": [
-    "LICENSE.txt",
-    "README.md",
-    "dist/index.d.ts",
-    "dist/index.js",
-    "dist/index.min.js",
-    "package.json"
-  ],
   "jest": {
     "preset": "ts-jest"
   },
   "homepage": "https://github.com/iorate/poi-ts#readme",
   "keywords": [
+    "assert",
+    "assertion",
+    "check",
+    "checker",
+    "hapi",
+    "joi",
     "json",
+    "schema",
     "type",
-    "typescript",
-    "typing",
+    "types",
+    "valid",
+    "validate",
     "validation",
     "validator"
   ],
   "license": "MIT",
-  "main": "dist/index.min.js",
+  "mangle": {
+    "regex": "^_"
+  },
   "prettier": {
     "arrowParens": "avoid",
     "embeddedLanguageFormatting": "off",
@@ -74,14 +102,16 @@
     "url": "git+https://github.com/iorate/poi-ts.git"
   },
   "scripts": {
-    "build": "run-s build:*",
-    "build:tsc": "tsc",
-    "build:terser": "terser ---compress --mangle --mangle-props \"regex=/^_/\" --output dist/index.min.js --ecma 2015 --toplevel dist/index.js",
+    "build": "microbundle build --name Poi --no-sourcemap",
     "commit": "git-cz",
     "lint": "run-p lint:*",
-    "lint:eslint": "eslint src",
-    "lint:prettier": "prettier --check --loglevel warn .",
-    "test": "jest"
+    "lint:eslint": "eslint --color .",
+    "lint:prettier": "prettier --check --color --loglevel warn .",
+    "lintfix": "run-s lintfix:*",
+    "lintfix:eslint": "eslint --color --fix .",
+    "lintfix:prettier": "prettier --color --loglevel warn --write .",
+    "test": "jest",
+    "watch": "microbundle watch --name Poi --no-sourcemap"
   },
-  "types": "dist/index.d.ts"
+  "sideEffects": false
 }

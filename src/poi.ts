@@ -21,7 +21,7 @@ export class ValidationError extends Error {
   }
 }
 
-export interface ValidatorBase {
+interface ValidatorBase {
   readonly _typeKind?: string;
   readonly _typeName: string;
   _validate(value: unknown, expression: string): void | ValidationError;
@@ -35,7 +35,7 @@ export interface Validator<T, TK extends string = string> extends ValidatorBase 
 
 export type ValidatorType<V> = V extends { readonly _type?: infer T } ? T : never;
 
-export const null_: () => Validator<null> = () => {
+export function null_(): Validator<null> {
   return {
     _typeName: 'null',
     _validate(value, expression) {
@@ -44,9 +44,9 @@ export const null_: () => Validator<null> = () => {
       }
     },
   };
-};
+}
 
-export const boolean: () => Validator<boolean> = () => {
+export function boolean(): Validator<boolean> {
   return {
     _typeName: 'boolean',
     _validate(value, expression) {
@@ -55,9 +55,9 @@ export const boolean: () => Validator<boolean> = () => {
       }
     },
   };
-};
+}
 
-export const number: () => Validator<number> = () => {
+export function number(): Validator<number> {
   return {
     _typeName: 'number',
     _validate(value, expression) {
@@ -66,9 +66,9 @@ export const number: () => Validator<number> = () => {
       }
     },
   };
-};
+}
 
-export const string: () => Validator<string> = () => {
+export function string(): Validator<string> {
   return {
     _typeName: 'string',
     _validate(value, expression) {
@@ -77,11 +77,9 @@ export const string: () => Validator<string> = () => {
       }
     },
   };
-};
+}
 
-export const array: <V extends ValidatorBase>(
-  validator: V,
-) => Validator<ValidatorType<V>[]> = validator => {
+export function array<V extends ValidatorBase>(validator: V): Validator<ValidatorType<V>[]> {
   return {
     _typeName:
       validator._typeKind === 'u' ? `(${validator._typeName})[]` : `${validator._typeName}[]`,
@@ -99,13 +97,11 @@ export const array: <V extends ValidatorBase>(
       }
     },
   };
-};
+}
 
-export const tuple: <Validators extends readonly ValidatorBase[]>(
+export function tuple<Validators extends readonly ValidatorBase[]>(
   ...validators: readonly [...Validators]
-) => Validator<{ [I in keyof Validators]: ValidatorType<Validators[I]> }> = (
-  ...validators: readonly ValidatorBase[]
-) => {
+): Validator<{ [I in keyof Validators]: ValidatorType<Validators[I]> }> {
   return {
     _typeName: `[${validators.map(validator => validator._typeName).join(', ')}]`,
     _validate(value, expression) {
@@ -122,15 +118,15 @@ export const tuple: <Validators extends readonly ValidatorBase[]>(
       }
     },
   };
-};
+}
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return value !== null && !Array.isArray(value) && typeof value === 'object';
 }
 
-export const object: <VM extends Readonly<Record<string, ValidatorBase>>>(
+export function object<VM extends Readonly<Record<string, ValidatorBase>>>(
   validatorMap: VM,
-) => Validator<
+): Validator<
   {
     [K in keyof VM]: VM[K]['_typeKind'] extends 'o' | undefined
       ? { [K0 in K]?: ValidatorType<VM[K0]> }
@@ -140,15 +136,16 @@ export const object: <VM extends Readonly<Record<string, ValidatorBase>>>(
       ? { [K in keyof I]: I[K] }
       : never
     : never
-> = validatorMap => {
+> {
+  const validatorMapEntries = Object.entries(validatorMap);
   return {
-    _typeName: Object.keys(validatorMap).length
-      ? `{ ${Object.keys(validatorMap)
+    _typeName: validatorMapEntries.length
+      ? `{ ${validatorMapEntries
           .map(
-            key =>
+            ([key, validator]) =>
               `${IDENTIFIER_REGEX.test(key) ? key : JSON.stringify(key)}${
-                validatorMap[key]._typeKind === 'o' ? '?' : ''
-              }: ${validatorMap[key]._typeName};`,
+                validator._typeKind === 'o' ? '?' : ''
+              }: ${validator._typeName};`,
           )
           .join(' ')} }`
       : '{}',
@@ -156,8 +153,8 @@ export const object: <VM extends Readonly<Record<string, ValidatorBase>>>(
       if (!isObject(value)) {
         return new ValidationError(expression, this._typeName);
       }
-      for (const key of Object.keys(validatorMap)) {
-        const subError = validatorMap[key]._validate(
+      for (const [key, validator] of validatorMapEntries) {
+        const subError = validator._validate(
           value[key],
           IDENTIFIER_REGEX.test(key)
             ? `${expression}.${key}`
@@ -169,11 +166,9 @@ export const object: <VM extends Readonly<Record<string, ValidatorBase>>>(
       }
     },
   };
-};
+}
 
-export const optional: <V extends ValidatorBase>(
-  validator: V,
-) => Validator<ValidatorType<V>, 'o'> = validator => {
+export function optional<V extends ValidatorBase>(validator: V): Validator<ValidatorType<V>, 'o'> {
   return {
     _typeKind: 'o',
     _typeName: validator._typeName,
@@ -184,11 +179,11 @@ export const optional: <V extends ValidatorBase>(
       return validator._validate(value, expression);
     },
   };
-};
+}
 
-export const record: <V extends ValidatorBase>(
+export function record<V extends ValidatorBase>(
   validator: V,
-) => Validator<Record<string, ValidatorType<V>>> = validator => {
+): Validator<Record<string, ValidatorType<V>>> {
   return {
     _typeName: `{ [key: string]: ${validator._typeName}; }`,
     _validate(value, expression) {
@@ -203,9 +198,9 @@ export const record: <V extends ValidatorBase>(
       }
     },
   };
-};
+}
 
-export const literal: <L extends boolean | number | string>(l: L) => Validator<L> = l => {
+export function literal<L extends boolean | number | string>(l: L): Validator<L> {
   return {
     _typeName: JSON.stringify(l),
     _validate(value, expression) {
@@ -214,14 +209,11 @@ export const literal: <L extends boolean | number | string>(l: L) => Validator<L
       }
     },
   };
-};
+}
 
-export const union: <Validators extends readonly ValidatorBase[]>(
+export function union<Validators extends readonly ValidatorBase[]>(
   ...validators: readonly [...Validators]
-) => Validator<
-  Validators[number] extends infer Validator ? ValidatorType<Validator> : never,
-  'u'
-> = (...validators: readonly ValidatorBase[]) => {
+): Validator<Validators[number] extends infer Validator ? ValidatorType<Validator> : never, 'u'> {
   return {
     _typeKind: 'u',
     _typeName: validators.map(validator => validator._typeName).join(' | '),
@@ -237,14 +229,14 @@ export const union: <Validators extends readonly ValidatorBase[]>(
       return new ValidationError(expression, this._typeName, subErrors);
     },
   };
-};
+}
 
-export const unknown: () => Validator<unknown> = () => {
+export function unknown(): Validator<unknown> {
   return {
     _typeName: 'unknown',
     _validate() {}, // eslint-disable-line @typescript-eslint/no-empty-function
   };
-};
+}
 
 export function validate<T>(
   value: unknown,
@@ -261,24 +253,17 @@ export function tryValidate<T>(value: unknown, validator: Validator<T>): value i
   return !validator._validate(value, '');
 }
 
-export const parseJSON: <T>(json: string, validator: Validator<T>, expression?: string) => T = (
-  json,
-  validator,
-  expression = 'value',
-) => {
+export function parseJSON<T>(json: string, validator: Validator<T>, expression = 'value'): T {
   const value = JSON.parse(json) as unknown;
   validate(value, validator, expression);
   return value;
-};
+}
 
-export const tryParseJSON: <T>(json: string, validator: Validator<T>) => T | undefined = (
-  json,
-  validator,
-) => {
+export function tryParseJSON<T>(json: string, validator: Validator<T>): T | undefined {
   try {
     const value = JSON.parse(json) as unknown;
     if (tryValidate(value, validator)) {
       return value;
     }
   } catch {} // eslint-disable-line no-empty
-};
+}
