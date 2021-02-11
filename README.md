@@ -13,8 +13,10 @@ const value = JSON.parse(json);
 try {
   Poi.validate(value, Poi.object({ age: Poi.number(), name: Poi.string() }));
   // The type of 'value' is '{ age: number; name: string; }' here!!!
+
 } catch (error: unknown) {
   // Validation error
+
 }
 ```
 
@@ -28,10 +30,10 @@ try {
 ## Introduction
 
 We often validate types of JSON values fetched from network or filesystem.
-For example, we can do it with [joi](https://github.com/hapijs/joi):
+For example, we can do it with [joi](https://github.com/sideway/joi):
 
 ```javascript
-import Joi from '@hapi/joi';
+import Joi from 'joi';
 
 const json = '{ "age": 17, "name": "Alice" }';
 
@@ -42,8 +44,10 @@ const { error, value } = Joi.object({
 
 if (!error) {
   // The type of 'value' is 'any' here...
+
 } else {
   // Validation error
+
 }
 ```
 
@@ -74,12 +78,13 @@ try {
                             // '{ age: number; name: string; }'. Did you mean 'name'?
 } catch (error: unknown) {
   // Validation error
+
 }
 ```
 
 ## Getting Started
 
-Poi can be installed from npm. `typescript >=3.7.2` is required to use Poi in TypeScript.
+Poi can be installed from npm. `typescript >=4.0.0` is required to use Poi in TypeScript.
 
 ```shell
 npm install poi-ts
@@ -115,6 +120,7 @@ The `message` property may be useful for debug.
 const value: unknown = [23, 'str'];
 try {
   Poi.validate(value, Poi.array(Poi.number()));
+
 } catch (error: unknown) {
   if (error instanceof Error) {
     console.error(error.message); // 'value' is not of type 'number[]'
@@ -152,6 +158,7 @@ Poi.validate(value, Poi.array(Poi.number()));
 const tuple: unknown = [23, 'str'];
 try {
   Poi.validate(tuple, Poi.array(Poi.number()), 'tuple');
+
 } catch (error: unknown) {
   if (error instanceof Error) {
     console.error(error.message); // 'tuple' is not of type 'number[]'
@@ -171,6 +178,7 @@ if (Poi.tryValidate(value, Poi.array(Poi.number()))) {
   // Never reached
 } else if (Poi.tryValidate(value, Poi.tuple(Poi.number(), Poi.string())) {
   // The type of 'value' is '[number, string]'.
+
 }
 ```
 
